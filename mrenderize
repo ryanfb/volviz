@@ -4,16 +4,19 @@
 
 require 'optparse'
 
+mrender_bin = 'mrender'
 filenames = []
 options = {
 	:angle_range => (0..359),
 	:angle_interval => 1,
-	:output_resolution => [1920, 1080]
+	:output_resolution => [1920, 1080],
+	:query => 'val', # 'gmag',
+	:measure => 'variance'
 }
 
 OptionParser.new do |opts|
 	opts.summary_width = 28
-	opts.banner = "Usage: #{File.basename(__FILE__)} [options] filename"
+	opts.banner = "Usage: #{File.basename(__FILE__)} [options] filename.nrrd"
 
 	def opts.show_usage
 		puts self
@@ -44,5 +47,6 @@ end
 
 # options parsed, run rendering
 options[:angle_range].step(options[:angle_interval]) do |angle|
-	puts angle
+	mrender_string = "#{mrender_bin} -i #{filenames[0]} -turn #{angle}"
+	puts angle.to_s + ": " + mrender_string
 end
