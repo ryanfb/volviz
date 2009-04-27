@@ -7,46 +7,46 @@ require 'optparse'
 mrender_bin = 'mrender'
 filenames = []
 options = {
-	:angle_range => (0..359),
-	:angle_interval => 1,
-	:output_resolution => [1920, 1080],
-	:query => 'val', # 'gmag',
-	:measure => 'variance'
+  :angle_range => (0..359),
+  :angle_interval => 1,
+  :output_resolution => [1920, 1080],
+  :query => 'val', # 'gmag',
+  :measure => 'variance'
 }
 
 OptionParser.new do |opts|
-	opts.summary_width = 28
-	opts.banner = "Usage: #{File.basename(__FILE__)} [options] filename.nrrd"
+  opts.summary_width = 28
+  opts.banner = "Usage: #{File.basename(__FILE__)} [options] filename.nrrd"
 
-	def opts.show_usage
-		puts self
-		exit
-	end
+  def opts.show_usage
+    puts self
+    exit
+  end
 
-	opts.on("--angles angle1,angle2", Array, 
-					"Beginning and end angles for rendering (0,359)") do |angles|
-		options[:angle_range] = Range.new(angles[0],angles[1])
-	end
+  opts.on("--angles angle1,angle2", Array, 
+          "Beginning and end angles for rendering (0,359)") do |angles|
+    options[:angle_range] = Range.new(angles[0],angles[1])
+  end
 
-	opts.on("-I INTERVAL","--interval=INTERVAL",
-					"Interval at which to create projections") do |interval|
-		options[:angle_interval] = interval.to_i
-	end
+  opts.on("-I INTERVAL","--interval=INTERVAL",
+          "Interval at which to create projections") do |interval|
+    options[:angle_interval] = interval.to_i
+  end
 
-	opts.show_usage if ARGV.empty?
+  opts.show_usage if ARGV.empty?
 
-	begin
-		opts.order(ARGV) do |filename|
-			filenames << filename
-		end
-	rescue OptionParser::ParseError => e
-		opts.warn e.message
-		opts.show_usage
-	end
+  begin
+    opts.order(ARGV) do |filename|
+      filenames << filename
+    end
+  rescue OptionParser::ParseError => e
+    opts.warn e.message
+    opts.show_usage
+  end
 end
 
 # options parsed, run rendering
 options[:angle_range].step(options[:angle_interval]) do |angle|
-	mrender_string = "#{mrender_bin} -i #{filenames[0]} -turn #{angle}"
-	puts angle.to_s + ": " + mrender_string
+  mrender_string = "#{mrender_bin} -i #{filenames[0]} -turn #{angle}"
+  puts angle.to_s + ": " + mrender_string
 end
