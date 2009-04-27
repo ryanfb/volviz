@@ -3,13 +3,17 @@
 # visualizations
 
 require 'optparse'
+require 'open3'
+
+require 'rubygems'
+require 'progressbar'
 
 mrender_bin = 'mrender'
 filenames = []
 options = {
   :angle_range => (0..359),
   :angle_interval => 1,
-  :output_resolution => [1920, 1080],
+  :output_resolution => [320, 240],
   :query => 'val', # 'gmag',
   # v gv gm gn np h l hf heval heval0 heval1 heval2 hevec hevec0 hevec1 hevec2 2d gt k1 k2 tc st si mc gc cdir1 cdir2 fc med
   :measure => 'variance'
@@ -48,6 +52,8 @@ OptionParser.new do |opts|
 end
 
 output_files = []
+bar = ProgressBar.new("mrender", options[:angle_range].end + 1)
+bar.set(0)
 
 # options parsed, run rendering
 filename = filenames[0]
@@ -79,8 +85,10 @@ options[:angle_range].step(options[:angle_interval]) do |angle|
   
   mrender_string += " -o #{output_file}"
   
-  puts angle.to_s + ": " + mrender_string
-  system(mrender_string)
+  # puts angle.to_s + ": " + mrender_string
+  Open3.popen3(mrender_string) { |stdin, stdout, stderr| stderr.readlines }
   
   output_files << output_file
+  bar.set(angle + 1)
 end
+bar.finish
