@@ -1,0 +1,32 @@
+#!/usr/bin/env ruby
+# Ruby script for interfacing with mrender to produce volumetric
+# visualizations
+
+require 'optparse'
+
+filenames = []
+options = {
+}
+
+OptionParser.new do |opts|
+	opts.summary_width = 28
+	opts.banner = "Usage: #{File.basename(__FILE__)} [options] filename"
+
+	def opts.show_usage
+		puts self
+		exit
+	end
+
+	opts.show_usage if ARGV.empty?
+
+	begin
+		opts.order(ARGV) do |filename|
+			filenames << filename
+		end
+	rescue OptionParser::ParseError => e
+		opts.warn e.message
+		opts.show_usage
+	end
+end
+
+# options parsed, run rendering
