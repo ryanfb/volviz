@@ -11,7 +11,9 @@ options = {
   :angle_interval => 1,
   :output_resolution => [1920, 1080],
   :query => 'val', # 'gmag',
+  # v gv gm gn np h l hf heval heval0 heval1 heval2 hevec hevec0 hevec1 hevec2 2d gt k1 k2 tc st si mc gc cdir1 cdir2 fc med
   :measure => 'variance'
+  # max
 }
 
 OptionParser.new do |opts|
@@ -46,7 +48,33 @@ OptionParser.new do |opts|
 end
 
 # options parsed, run rendering
+filename = filenames[0]
 options[:angle_range].step(options[:angle_interval]) do |angle|
-  mrender_string = "#{mrender_bin} -i #{filenames[0]} -turn #{angle}"
+  mrender_string = "#{mrender_bin} -i #{filenames[0]}"
+  mrender_string += " -turn #{angle}"
+  mrender_string += " -is #{options[:output_resolution].join(' ')}"
+  mrender_string += " -k scalar"
+  mrender_string += " -q #{options[:query]}"
+  mrender_string += " -m #{options[:measure]}"
+  # copied in for now
+  mrender_string += " -fr -0.1 0 4.1"
+  mrender_string += " -dn -1"
+  mrender_string += " -di 0"
+  mrender_string += " -df 1"
+  mrender_string += " -up 0 -1 0"
+  mrender_string += " -rh"
+  mrender_string += " -ar"
+  mrender_string += " -ur -1 1"
+  mrender_string += " -vr -1 1"
+  mrender_string += " -step 0.0008"
+  mrender_string += " -nt 16"
+  mrender_string += " -k00 cubic:1,0"
+  mrender_string += " -k11 cubicd:1,0"
+  
+  mrender_string += " -o " + File.basename(filename, '.nrrd') +
+                    sprintf("-%s-%s-%03d.png",
+                  options[:query], options[:measure], angle)
+  
   puts angle.to_s + ": " + mrender_string
+  system(mrender_string)
 end
