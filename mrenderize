@@ -47,6 +47,8 @@ OptionParser.new do |opts|
   end
 end
 
+output_files = []
+
 # options parsed, run rendering
 filename = filenames[0]
 options[:angle_range].step(options[:angle_interval]) do |angle|
@@ -71,10 +73,14 @@ options[:angle_range].step(options[:angle_interval]) do |angle|
   mrender_string += " -k00 cubic:1,0"
   mrender_string += " -k11 cubicd:1,0"
   
-  mrender_string += " -o " + File.basename(filename, '.nrrd') +
-                    sprintf("-%s-%s-%03d.png",
+  output_file = File.basename(filename, '.nrrd') +
+                sprintf("-%s-%s-%03d.nrrd",
                   options[:query], options[:measure], angle)
+  
+  mrender_string += " -o #{output_file}"
   
   puts angle.to_s + ": " + mrender_string
   system(mrender_string)
+  
+  output_files << output_file
 end
