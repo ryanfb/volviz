@@ -114,3 +114,26 @@ filename = filenames[0]
   render_bar.set(angle + 1)
 end
 render_bar.finish
+
+minmax_bar = ProgressBar.new("min/max calc", output_files.length)
+# compute min/max of output projections
+output_files.each do |input_nrrd|
+  Open3.popen3("unu minmax #{input_nrrd}") do |stdin, stdout, stderr|
+    stdout.each("\n") do |line|
+      if line =~ /^min: (\d+\.?\d*)/
+        this_min = $1.to_f
+        @global_min ||= this_min
+        @global_min = this_min < @global_min ? this_min : @global_min
+      elsif line =~ /^max: (\d+\.?\d*)/
+        this_max = $1.to_f
+        @global_max ||= this_max
+        @global_max = this_max > @global_max ? this_max : @global_max
+      end
+    end
+  end
+  minmax_bar.inc
+end
+minmax_bar.finish
+
+puts "min: #{@global_min}"
+puts "max: #{@global_max}"
