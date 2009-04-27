@@ -10,10 +10,11 @@ require 'progressbar'
 
 mrender_bin = 'mrender'
 filenames = []
-options = {
+@options = {
   :angle_range => (0..359),
   :angle_interval => 1,
   :output_resolution => [320, 240],
+  :show_frame_progress => false,
   :query => 'val', # 'gmag',
   # v gv gm gn np h l hf heval heval0 heval1 heval2 hevec hevec0 hevec1 hevec2 2d gt k1 k2 tc st si mc gc cdir1 cdir2 fc med
   :measure => 'variance'
@@ -31,12 +32,12 @@ OptionParser.new do |opts|
 
   opts.on("--angles angle1,angle2", Array, 
           "Beginning and end angles for rendering (0,359)") do |angles|
-    options[:angle_range] = Range.new(angles[0],angles[1])
+    @options[:angle_range] = Range.new(angles[0],angles[1])
   end
 
   opts.on("-I INTERVAL","--interval=INTERVAL",
           "Interval at which to create projections") do |interval|
-    options[:angle_interval] = interval.to_i
+    @options[:angle_interval] = interval.to_i
   end
 
   opts.show_usage if ARGV.empty?
@@ -51,19 +52,39 @@ OptionParser.new do |opts|
   end
 end
 
-output_files = []
-bar = ProgressBar.new("mrender", options[:angle_range].end + 1)
-bar.set(0)
+def execute_mrender(command, max)
+  if @options[:show_frame_progress]
+    puts "\n"
+    bar = ProgressBar.new("mrender", max)
+  end
+  Open3.popen3(command) do |stdin, stdout, stderr|
+    if @options[:show_frame_progress]
+      stderr.each(" ") do |element|
+        if element =~ /(\d+)\/#{max.to_s}/
+          bar.set($1.to_i)
+        end
+      end
+    else
+      stderr.readlines
+    end
+  end
+  bar.finish unless !@options[:show_frame_progress]
+end
 
-# options parsed, run rendering
+output_files = []
+render_bar = ProgressBar.new("volume render", @options[:angle_range].end + 1)
+render_bar.set(0)
+render_bar.show_progress
+
+# @options parsed, run rendering
 filename = filenames[0]
-options[:angle_range].step(options[:angle_interval]) do |angle|
+@options[:angle_range].step(@options[:angle_interval]) do |angle|
   mrender_string = "#{mrender_bin} -i #{filenames[0]}"
   mrender_string += " -turn #{angle}"
-  mrender_string += " -is #{options[:output_resolution].join(' ')}"
+  mrender_string += " -is #{@options[:output_resolution].join(' ')}"
   mrender_string += " -k scalar"
-  mrender_string += " -q #{options[:query]}"
-  mrender_string += " -m #{options[:measure]}"
+  mrender_string += " -q #{@options[:query]}"
+  mrender_string += " -m #{@options[:measure]}"
   # copied in for now
   mrender_string += " -fr -0.1 0 4.1"
   mrender_string += " -dn -1"
@@ -81,14 +102,15 @@ options[:angle_range].step(options[:angle_interval]) do |angle|
   
   output_file = File.basename(filename, '.nrrd') +
                 sprintf("-%s-%s-%03d.nrrd",
-                  options[:query], options[:measure], angle)
+                  @options[:query], @options[:measure], angle)
   
   mrender_string += " -o #{output_file}"
   
   # puts angle.to_s + ": " + mrender_string
-  Open3.popen3(mrender_string) { |stdin, stdout, stderr| stderr.readlines }
+  # Open3.popen3(mrender_string) { |stdin, stdout, stderr| stderr.readlines }
+  execute_mrender(mrender_string, @options[:output_resolution][1])
   
   output_files << output_file
-  bar.set(angle + 1)
+  render_bar.set(angle + 1)
 end
-bar.finish
+render_bar.finish
