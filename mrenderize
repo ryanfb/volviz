@@ -137,3 +137,19 @@ minmax_bar.finish
 
 puts "min: #{@global_min}"
 puts "max: #{@global_max}"
+
+output_pngs = []
+quantize_bar = ProgressBar.new("quantizing", output_files.length)
+# quantize into png's
+output_files.each do |input_nrrd|
+  output_png = File.basename(input_nrrd, '.nrrd') + '.png'
+  quantize_string = "unu quantize" +
+                    " -b 8 -min #{@global_min} -max #{@global_max}" + 
+                    " -i #{input_nrrd} -o #{output_png}"
+  Open3.popen3(quantize_string) do |stdin, stdout, stderr|
+    stdout.readlines
+  end
+  output_pngs << output_png
+  quantize_bar.inc
+end
+quantize_bar.finish
