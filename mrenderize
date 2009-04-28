@@ -10,6 +10,59 @@ require File.join(File.expand_path(File.dirname(__FILE__)), "media-commands")
 require 'rubygems'
 require 'progressbar'
 
+# src/nrrd/enumsNrrd.c : _nrrdMeasureStr
+valid_measures = [
+  "min",
+  "max",
+  "mean",
+  "median",
+  "mode",
+  "product",
+  "sum",
+  "L1",
+  "L2",
+  "Linf",
+  "variance",
+  "SD",
+  "skew",
+  "line-slope",
+  "line-intercept",
+  "line-error"
+]
+
+# src/gage/scl.c : _gageSclStrEqv
+valid_queries = [
+  "value", 
+  "gradvec",
+  "gradmag",
+  "normal",
+  "nperp", 
+  "hessian",
+  "laplacian",
+  "hf",
+  "heval",
+  "heval0",
+  "heval1",
+  "heval2",
+  "hevec",
+  "hevec0",
+  "hevec1",
+  "hevec2",
+  "2nddd",
+  "geomten",
+  "k1",
+  "k2",
+  "totalcurv",
+  "st", # "shape trace",
+  "si", # "shape index",
+  "meancurv",
+  "gausscurv",
+  "curvdir1",
+  "curvdir2",
+  "flowlinecurv",
+  "median"
+]
+
 mrender_bin = 'mrender'
 filenames = []
 @options = {
@@ -17,9 +70,8 @@ filenames = []
   :angle_interval => 1,
   :output_resolution => [320, 240],
   :show_frame_progress => false,
-  :query => 'val', # 'gmag',
-  # v gv gm gn np h l hf heval heval0 heval1 heval2 hevec hevec0 hevec1 hevec2 2d gt k1 k2 tc st si mc gc cdir1 cdir2 fc med
-  :measure => 'variance'
+  :queries => ['val'],
+  :measures => ['variance']
   # max
 }
 
@@ -45,6 +97,16 @@ OptionParser.new do |opts|
   opts.on("-I INTERVAL","--interval=INTERVAL",
           "Interval at which to create projections") do |interval|
     @options[:angle_interval] = interval.to_i
+  end
+  
+  opts.on("--measures measure1,measure2,...", Array,
+          "Value measures to render, any of: #{valid_measures.join(', ')}") do |measures|
+    @options[:measures] = measures
+  end
+  
+  opts.on("--queries query1,query2,...", Array,
+          "Value queries to render, any of: #{valid_queries.join(', ')}") do |queries|
+    @options[:queries] = queries
   end
 
   opts.show_usage if ARGV.empty?
@@ -78,118 +140,129 @@ def execute_mrender(command, max)
   bar.finish unless !@options[:show_frame_progress]
 end
 
-output_files = []
-render_bar = ProgressBar.new("volume render", @options[:angle_range].end + 1)
-render_bar.set(0)
-render_bar.show_progress
+render_count = 0
+@options[:queries].each do |query|
+  @options[:measures].each do |measure|
+    render_count += 1
+    puts query + ", " + measure + "(" + render_count.to_s + "/" + 
+      (@options[:queries].length*@options[:measures].length).to_s + ")"
+    
+    output_files = []
+    render_bar = ProgressBar.new("volume render", @options[:angle_range].end + 1)
+    render_bar.set(0)
+    render_bar.show_progress
 
-# @options parsed, run rendering
-filename = filenames[0]
-@options[:angle_range].step(@options[:angle_interval]) do |angle|
-  mrender_string = "#{mrender_bin} -i #{filenames[0]}"
-  mrender_string += " -turn #{angle}"
-  mrender_string += " -is #{@options[:output_resolution].join(' ')}"
-  mrender_string += " -k scalar"
-  mrender_string += " -q #{@options[:query]}"
-  mrender_string += " -m #{@options[:measure]}"
-  # copied in for now
-  mrender_string += " -fr -0.1 0 4.1"
-  mrender_string += " -dn -1"
-  mrender_string += " -di 0"
-  mrender_string += " -df 1"
-  mrender_string += " -up 0 -1 0"
-  mrender_string += " -rh"
-  mrender_string += " -ar"
-  mrender_string += " -ur -1 1"
-  mrender_string += " -vr -1 1"
-  mrender_string += " -step 0.0008"
-  mrender_string += " -nt 16"
-  mrender_string += " -k00 cubic:1,0"
-  mrender_string += " -k11 cubicd:1,0"
+    # @options parsed, run rendering
+    filename = filenames[0]
+    @options[:angle_range].step(@options[:angle_interval]) do |angle|
+      mrender_string = "#{mrender_bin} -i #{filenames[0]}"
+      mrender_string += " -turn #{angle}"
+      mrender_string += " -is #{@options[:output_resolution].join(' ')}"
+      mrender_string += " -k scalar"
+      mrender_string += " -q #{query}"
+      mrender_string += " -m #{measure}"
+      # copied in for now
+      mrender_string += " -fr -0.1 0 4.1"
+      mrender_string += " -dn -1"
+      mrender_string += " -di 0"
+      mrender_string += " -df 1"
+      mrender_string += " -up 0 -1 0"
+      mrender_string += " -rh"
+      mrender_string += " -ar"
+      mrender_string += " -ur -1 1"
+      mrender_string += " -vr -1 1"
+      mrender_string += " -step 0.0008"
+      mrender_string += " -nt 16"
+      mrender_string += " -k00 cubic:1,0"
+      mrender_string += " -k11 cubicd:1,0"
   
-  output_file = File.basename(filename, '.nrrd') +
-                sprintf("-%s-%s-%03d.nrrd",
-                  @options[:query], @options[:measure], angle)
+      output_file = File.basename(filename, '.nrrd') +
+                    sprintf("-%s-%s-%03d.nrrd",
+                      query, measure, angle)
   
-  mrender_string += " -o #{output_file}"
+      mrender_string += " -o #{output_file}"
   
-  # puts angle.to_s + ": " + mrender_string
-  # Open3.popen3(mrender_string) { |stdin, stdout, stderr| stderr.readlines }
-  execute_mrender(mrender_string, @options[:output_resolution][1])
+      # puts angle.to_s + ": " + mrender_string
+      # Open3.popen3(mrender_string) { |stdin, stdout, stderr| stderr.readlines }
+      execute_mrender(mrender_string, @options[:output_resolution][1])
   
-  output_files << output_file
-  render_bar.set(angle + 1)
-end
-render_bar.finish
-
-minmax_bar = ProgressBar.new("min/max calc", output_files.length)
-# compute min/max of output projections
-output_files.each do |input_nrrd|
-  Open3.popen3("unu minmax #{input_nrrd}") do |stdin, stdout, stderr|
-    stdout.each("\n") do |line|
-      if line =~ /^min: (\d+\.?\d*)/
-        this_min = $1.to_f
-        @global_min ||= this_min
-        @global_min = this_min < @global_min ? this_min : @global_min
-      elsif line =~ /^max: (\d+\.?\d*)/
-        this_max = $1.to_f
-        @global_max ||= this_max
-        @global_max = this_max > @global_max ? this_max : @global_max
-      end
+      output_files << output_file
+      render_bar.set(angle + 1)
     end
+    render_bar.finish
+
+    minmax_bar = ProgressBar.new("min/max calc", output_files.length)
+    # compute min/max of output projections
+    output_files.each do |input_nrrd|
+      Open3.popen3("unu minmax #{input_nrrd}") do |stdin, stdout, stderr|
+        stdout.each("\n") do |line|
+          if line =~ /^min: (\d+\.?\d*)/
+            this_min = $1.to_f
+            @global_min ||= this_min
+            @global_min = this_min < @global_min ? this_min : @global_min
+          elsif line =~ /^max: (\d+\.?\d*)/
+            this_max = $1.to_f
+            @global_max ||= this_max
+            @global_max = this_max > @global_max ? this_max : @global_max
+          end
+        end
+      end
+      minmax_bar.inc
+    end
+    minmax_bar.finish
+
+    # puts "min: #{@global_min}"
+    # puts "max: #{@global_max}"
+
+    output_pngs = []
+    quantize_bar = ProgressBar.new("quantizing", output_files.length)
+    # quantize into png's
+    output_files.each do |input_nrrd|
+      output_png = File.basename(input_nrrd, '.nrrd') + '.png'
+      quantize_string = "unu quantize" +
+                        " -b 8 -min #{@global_min} -max #{@global_max}" + 
+                        " -i #{input_nrrd} -o #{output_png}"
+      Open3.popen3(quantize_string) do |stdin, stdout, stderr|
+        stdout.readlines
+      end
+      output_pngs << output_png
+      quantize_bar.inc
+    end
+    quantize_bar.finish
+
+    output_jpgs = []
+    jpg_bar = ProgressBar.new("image conv", output_pngs.length)
+    # convert to jpeg's
+    output_pngs.each do |input_png|
+      output_jpg = File.basename(input_png, '.png') + '.jpg'
+      Open3.popen3("convert -quality 100 #{input_png} #{output_jpg}") do |stdin, stdout, stderr|
+        stdout.readlines
+      end
+      output_jpgs << output_jpg
+      jpg_bar.inc
+    end
+    jpg_bar.finish
+
+    # convert to video
+    output_video = sprintf("%s-%s-%s.avi",
+                     File.basename(filename, '.nrrd'), query, measure)
+    mencoder_string = "mencoder #{output_jpgs.map{|i| 'mf://' + i}.join(' ')}" +
+                      " -o #{output_video}" +
+                      " -mf fps=10" +
+                      " -ovc lavc -lavcopts vcodec=msmpeg4v2:vbitrate=800" +
+                      " 2>&1"
+    # puts mencoder_string
+    safe_execute do
+      execute_mencoder(mencoder_string)
+    end
+
+    cleanup_files = []
+    cleanup_files += output_jpgs + output_pngs + output_files
+    cleanup_bar = ProgressBar.new("cleanup", cleanup_files.length)
+    cleanup_files.each do |cleanup|
+      File.unlink(cleanup)
+      cleanup_bar.inc
+    end
+    cleanup_bar.finish
   end
-  minmax_bar.inc
 end
-minmax_bar.finish
-
-# puts "min: #{@global_min}"
-# puts "max: #{@global_max}"
-
-output_pngs = []
-quantize_bar = ProgressBar.new("quantizing", output_files.length)
-# quantize into png's
-output_files.each do |input_nrrd|
-  output_png = File.basename(input_nrrd, '.nrrd') + '.png'
-  quantize_string = "unu quantize" +
-                    " -b 8 -min #{@global_min} -max #{@global_max}" + 
-                    " -i #{input_nrrd} -o #{output_png}"
-  Open3.popen3(quantize_string) do |stdin, stdout, stderr|
-    stdout.readlines
-  end
-  output_pngs << output_png
-  quantize_bar.inc
-end
-quantize_bar.finish
-
-output_jpgs = []
-jpg_bar = ProgressBar.new("image conv", output_pngs.length)
-# convert to jpeg's
-output_pngs.each do |input_png|
-  output_jpg = File.basename(input_png, '.png') + '.jpg'
-  Open3.popen3("convert -quality 100 #{input_png} #{output_jpg}") do |stdin, stdout, stderr|
-    stdout.readlines
-  end
-  output_jpgs << output_jpg
-  jpg_bar.inc
-end
-jpg_bar.finish
-
-# convert to video
-mencoder_string = "mencoder #{output_jpgs.map{|i| 'mf://' + i}.join(' ')}" +
-                  " -o #{File.basename(filename, '.nrrd')}.avi" +
-                  " -mf fps=10" +
-                  " -ovc lavc -lavcopts vcodec=msmpeg4v2:vbitrate=800" +
-                  " 2>&1"
-# puts mencoder_string
-safe_execute do
-  execute_mencoder(mencoder_string)
-end
-
-cleanup_files = []
-cleanup_files += output_jpgs + output_pngs + output_files
-cleanup_bar = ProgressBar.new("cleanup", cleanup_files.length)
-cleanup_files.each do |cleanup|
-  File.unlink(cleanup)
-  cleanup_bar.inc
-end
-cleanup_bar.finish
