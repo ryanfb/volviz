@@ -101,12 +101,12 @@ OptionParser.new do |opts|
   
   opts.on("--measures m1,m2,...", Array,
           "Value measures to render, any of: #{valid_measures.join(', ')}") do |measures|
-    @options[:measures] = measures
+    @options[:measures] = measures & valid_measures
   end
   
   opts.on("--queries q1,q2,...", Array,
           "Value queries to render, any of: #{valid_queries.join(', ')}") do |queries|
-    @options[:queries] = queries
+    @options[:queries] = queries & valid_queries
   end
 
   opts.show_usage if ARGV.empty?
