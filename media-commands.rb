@@ -2,6 +2,7 @@
 
 # Originally pulled from http://tinyurl.com/vmo7g
 
+require 'rubygems'
 require 'progressbar'
 
 class MediaFormatException < StandardError

@@ -5,6 +5,8 @@
 require 'optparse'
 require 'open3'
 
+require File.join(File.expand_path(File.dirname(__FILE__)), "media-commands")
+
 require 'rubygems'
 require 'progressbar'
 
@@ -140,8 +142,8 @@ output_files.each do |input_nrrd|
 end
 minmax_bar.finish
 
-puts "min: #{@global_min}"
-puts "max: #{@global_max}"
+# puts "min: #{@global_min}"
+# puts "max: #{@global_max}"
 
 output_pngs = []
 quantize_bar = ProgressBar.new("quantizing", output_files.length)
@@ -173,3 +175,12 @@ end
 jpg_bar.finish
 
 # convert to video
+mencoder_string = "mencoder #{output_jpgs.map{|i| 'mf://' + i}.join(' ')}" +
+                  " -o #{File.basename(filename, '.nrrd')}.avi" +
+                  " -mf fps=10" +
+                  " -ovc lavc -lavcopts vcodec=msmpeg4v2:vbitrate=800" +
+                  " 2>&1"
+# puts mencoder_string
+safe_execute do
+  execute_mencoder(mencoder_string)
+end
