@@ -99,12 +99,12 @@ OptionParser.new do |opts|
     @options[:angle_interval] = interval.to_i
   end
   
-  opts.on("--measures measure1,measure2,...", Array,
+  opts.on("--measures m1,m2,...", Array,
           "Value measures to render, any of: #{valid_measures.join(', ')}") do |measures|
     @options[:measures] = measures
   end
   
-  opts.on("--queries query1,query2,...", Array,
+  opts.on("--queries q1,q2,...", Array,
           "Value queries to render, any of: #{valid_queries.join(', ')}") do |queries|
     @options[:queries] = queries
   end
@@ -144,7 +144,7 @@ render_count = 0
 @options[:queries].each do |query|
   @options[:measures].each do |measure|
     render_count += 1
-    puts query + ", " + measure + "(" + render_count.to_s + "/" + 
+    puts query + ", " + measure + " (" + render_count.to_s + "/" + 
       (@options[:queries].length*@options[:measures].length).to_s + ")"
     
     output_files = []
