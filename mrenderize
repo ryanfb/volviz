@@ -184,3 +184,12 @@ mencoder_string = "mencoder #{output_jpgs.map{|i| 'mf://' + i}.join(' ')}" +
 safe_execute do
   execute_mencoder(mencoder_string)
 end
+
+cleanup_files = []
+cleanup_files += output_jpgs + output_pngs + output_files
+cleanup_bar = ProgressBar.new("cleanup", cleanup_files.length)
+cleanup_files.each do |cleanup|
+  File.unlink(cleanup)
+  cleanup_bar.inc
+end
+cleanup_bar.finish
