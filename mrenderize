@@ -29,6 +29,11 @@ OptionParser.new do |opts|
     puts self
     exit
   end
+  
+  opts.on("--is width,height", Array,
+          "Output image/movie resolution (640,480)") do |resolution|
+    @options[:output_resolution] = resolution
+  end
 
   opts.on("--angles angle1,angle2", Array, 
           "Beginning and end angles for rendering (0,359)") do |angles|
@@ -153,3 +158,18 @@ output_files.each do |input_nrrd|
   quantize_bar.inc
 end
 quantize_bar.finish
+
+output_jpgs = []
+jpg_bar = ProgressBar.new("image conv", output_pngs.length)
+# convert to jpeg's
+output_pngs.each do |input_png|
+  output_jpg = File.basename(input_png, '.png') + '.jpg'
+  Open3.popen3("convert -quality 100 #{input_png} #{output_jpg}") do |stdin, stdout, stderr|
+    stdout.readlines
+  end
+  output_jpgs << output_jpg
+  jpg_bar.inc
+end
+jpg_bar.finish
+
+# convert to video
