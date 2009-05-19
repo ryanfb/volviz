@@ -265,14 +265,18 @@ render_count = 0
       mrender_string += " -k11 #{parameter[:k1_kernel]}"
   
       output_file = File.basename(filename, '.nrrd') +
-                    sprintf("-%s-%s-%03d.nrrd",
-                      query, measure, frame)
+                    sprintf("-%s-%s-%s.nrrd",
+                      query, measure, short_sha(parameter))
   
       mrender_string += " -o #{output_file}"
   
       # puts angle.to_s + ": " + mrender_string
       # Open3.popen3(mrender_string) { |stdin, stdout, stderr| stderr.readlines }
-      execute_mrender(mrender_string, @options[:output_resolution][1])
+      if File.exists?(output_file)
+        puts output_file + " exists, skipping"
+      else
+        execute_mrender(mrender_string, @options[:output_resolution][1])
+      end
   
       output_files << output_file
       render_bar.inc
@@ -307,7 +311,9 @@ render_count = 0
     quantize_bar = ProgressBar.new("quantizing", output_files.length)
     # quantize into png's
     output_files.each do |input_nrrd|
-      output_png = File.basename(input_nrrd, '.nrrd') + '.png'
+      output_png = File.basename(filename, '.nrrd') +
+                    sprintf("-%s-%s-%03d.png",
+                      query, measure, output_pngs.length)
       quantize_string = "unu quantize" +
                         " -b 8 -min #{@global_min} -max #{@global_max}" + 
                         " -i #{input_nrrd} -o #{output_png}"
