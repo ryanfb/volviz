@@ -265,7 +265,7 @@ render_count = 0
       mrender_string += " -k11 #{parameter[:k1_kernel]}"
   
       output_file = File.basename(filename, '.nrrd') +
-                    sprintf("-%s-%s-%s.nrrd",
+                    sprintf("-%s-%s-render-%s.nrrd",
                       query, measure, short_sha(parameter))
   
       mrender_string += " -o #{output_file}"
