@@ -201,6 +201,9 @@ render_count = 0
     if @options.has_key? :camera_file
       camera_file = YAML.load_file(@options[:camera_file])
       camera_file.each do |camera_params|
+        # merge last parameters so we don't have to respecify each frame
+        camera_params =  mrender_parameters.last.merge(camera_params) unless
+          mrender_parameters.last.nil?
         # merge against defaults so custom params overwrite them
         mrender_parameters << MRENDER_DEFAULTS.merge(camera_params)
       end
