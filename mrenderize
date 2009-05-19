@@ -40,6 +40,7 @@ MRENDER_DEFAULTS = {
   :step => "0.0008",
   :value_kernel => "cubic:1,0",
   :k1_kernel => "cubicd:1,0",
+  :angle => "0",
 }
 
 # src/nrrd/enumsNrrd.c : _nrrdMeasureStr
@@ -205,7 +206,7 @@ render_count = 0
       end
     else
       @options[:angle_range].step(@options[:angle_interval]) do |angle|
-        mrender_parameters << {:angle => angle}.merge(MRENDER_DEFAULTS)
+        mrender_parameters << MRENDER_DEFAULTS.merge({:angle => angle})
       end
     end
     
