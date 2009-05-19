@@ -4,6 +4,7 @@
 
 require 'optparse'
 require 'open3'
+require 'digest/sha1'
 
 require File.join(File.expand_path(File.dirname(__FILE__)), "media-commands")
 
@@ -184,6 +185,11 @@ def execute_mrender(command, max)
   bar.finish unless !@options[:show_frame_progress]
 end
 
+def short_sha(input_object)
+  # 7 characters is *usually* enough to avoid collision
+  return Digest::SHA1.hexdigest(input_object.to_yaml)[0..6]
+end
+
 # @options parsed, run renderings
 render_count = 0
 @options[:queries].each do |query|
@@ -191,17 +197,6 @@ render_count = 0
     render_count += 1
     puts query + ", " + measure + " (" + render_count.to_s + "/" + 
       (@options[:queries].length*@options[:measures].length).to_s + ")"
-    
-    filename = filenames[0]
-    output_video = sprintf("%s-%s-%s.avi",
-                     File.basename(filename, '.nrrd'), query, measure)
-    
-    if File.exists?(output_video)
-      puts output_video + " exists, skipping"
-      next
-    end
-    
-    output_files = []
 
     mrender_parameters = []
     if @options.has_key? :camera_file
@@ -220,6 +215,18 @@ render_count = 0
     end
     
     # puts mrender_parameters.to_yaml
+    
+    filename = filenames[0]
+    output_video = sprintf("%s-%s-%s-%s.avi",
+                     File.basename(filename, '.nrrd'), query, measure,
+                      short_sha(mrender_parameters))
+    
+    if File.exists?(output_video)
+      puts output_video + " exists, skipping"
+      next
+    end
+    
+    output_files = []
     
     render_bar = ProgressBar.new("volume render", mrender_parameters.length + 1)
     render_bar.set(0)
