@@ -160,13 +160,20 @@ render_count = 0
     end
     
     output_files = []
-    render_bar = ProgressBar.new("volume render", @options[:angle_range].end + 1)
+
+    mrender_parameters = []
+    @options[:angle_range].step(@options[:angle_interval]) do |angle|
+      mrender_parameters << {:angle => angle}
+    end
+    
+    render_bar = ProgressBar.new("volume render", mrender_parameters.length + 1)
     render_bar.set(0)
     render_bar.show_progress
-
-    @options[:angle_range].step(@options[:angle_interval]) do |angle|
+    frame = 0
+    
+    mrender_parameters.each do |parameter|
       mrender_string = "#{mrender_bin} -i #{filenames[0]}"
-      mrender_string += " -turn #{angle}"
+      mrender_string += " -turn #{parameter[:angle]}"
       mrender_string += " -is #{@options[:output_resolution].join(' ')}"
       mrender_string += " -k scalar"
       mrender_string += " -q #{query}"
@@ -188,7 +195,7 @@ render_count = 0
   
       output_file = File.basename(filename, '.nrrd') +
                     sprintf("-%s-%s-%03d.nrrd",
-                      query, measure, angle)
+                      query, measure, frame)
   
       mrender_string += " -o #{output_file}"
   
@@ -197,7 +204,8 @@ render_count = 0
       execute_mrender(mrender_string, @options[:output_resolution][1])
   
       output_files << output_file
-      render_bar.set(angle + 1)
+      render_bar.inc
+      frame += 1
     end
     render_bar.finish
 
