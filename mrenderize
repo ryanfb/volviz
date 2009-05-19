@@ -103,6 +103,7 @@ filenames = []
   :angle_interval => 1,
   :output_resolution => DEFAULT_RESOLUTION,
   :show_frame_progress => false,
+  :num_threads => DEFAULT_NUM_THREADS,
   :queries => ['val'],
   :measures => ['variance']
   # max
@@ -115,6 +116,11 @@ OptionParser.new do |opts|
   def opts.show_usage
     puts self
     exit
+  end
+  
+  opts.on("-nt THREADS","--num-threads=THREADS",
+          "Number of threads for mrender (#{DEFAULT_NUM_THREADS})") do |threads|
+    @options[:num_threads] = threads
   end
   
   opts.on("--is width,height", Array,
@@ -227,7 +233,9 @@ render_count = 0
       mrender_string += " -k scalar"
       mrender_string += " -q #{query}"
       mrender_string += " -m #{measure}"
-
+      mrender_string += " -nt #{@options[:num_threads]}"
+      
+      # per-frame parameters
       mrender_string += " -fr #{parameter[:eye_pos]}"
       mrender_string += " -dn #{parameter[:near_clip]}"
       mrender_string += " -di #{parameter[:image_distance]}"
@@ -238,7 +246,6 @@ render_count = 0
       mrender_string += " -ur #{parameter[:u_range]}"
       mrender_string += " -vr #{parameter[:v_range]}"
       mrender_string += " -step #{parameter[:step]}"
-      mrender_string += " -nt #{DEFAULT_NUM_THREADS}"
       mrender_string += " -k00 #{parameter[:value_kernel]}"
       mrender_string += " -k11 #{parameter[:k1_kernel]}"
   
