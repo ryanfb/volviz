@@ -108,7 +108,7 @@ filenames = []
 }
 
 OptionParser.new do |opts|
-  opts.summary_width = 28
+  opts.summary_width = 30
   opts.banner = "Usage: #{File.basename(__FILE__)} [options] filename.nrrd"
 
   def opts.show_usage
@@ -129,6 +129,11 @@ OptionParser.new do |opts|
   opts.on("-I INTERVAL","--interval=INTERVAL",
           "Interval at which to create projections") do |interval|
     @options[:angle_interval] = interval.to_i
+  end
+  
+  opts.on("-C CAMERA_FILE","--camera_file=CAMERA_FILE",
+          "Use camera file for mrender camera positions") do |camera_file|
+    @options[:camera_file] = camera_file
   end
   
   opts.on("--measures m1,m2,...", Array,
@@ -192,9 +197,19 @@ render_count = 0
     output_files = []
 
     mrender_parameters = []
-    @options[:angle_range].step(@options[:angle_interval]) do |angle|
-      mrender_parameters << {:angle => angle}.merge(MRENDER_DEFAULTS)
+    if @options.has_key? :camera_file
+      camera_file = YAML.load_file(@options[:camera_file])
+      camera_file.each do |camera_params|
+        # merge against defaults so custom params overwrite them
+        mrender_parameters << MRENDER_DEFAULTS.merge(camera_params)
+      end
+    else
+      @options[:angle_range].step(@options[:angle_interval]) do |angle|
+        mrender_parameters << {:angle => angle}.merge(MRENDER_DEFAULTS)
+      end
     end
+    
+    # puts mrender_parameters.to_yaml
     
     render_bar = ProgressBar.new("volume render", mrender_parameters.length + 1)
     render_bar.set(0)
