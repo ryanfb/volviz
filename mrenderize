@@ -106,7 +106,8 @@ filenames = []
   :show_frame_progress => false,
   :num_threads => DEFAULT_NUM_THREADS,
   :queries => ['val'],
-  :measures => ['variance']
+  :measures => ['variance'],
+  :cleanup => true
   # max
 }
 
@@ -117,6 +118,11 @@ OptionParser.new do |opts|
   def opts.show_usage
     puts self
     exit
+  end
+  
+  opts.on("-l","--[no-]leave",
+          "Leave intermediate files") do |cleanup|
+    @options[:cleanup] = !cleanup
   end
   
   opts.on("-nt THREADS","--num-threads=THREADS",
@@ -198,6 +204,8 @@ render_count = 0
     puts query + ", " + measure + " (" + render_count.to_s + "/" + 
       (@options[:queries].length*@options[:measures].length).to_s + ")"
 
+    MRENDER_DEFAULTS[:output_resolution] = 
+      @options[:output_resolution].join(' ')
     mrender_parameters = []
     if @options.has_key? :camera_file
       camera_file = YAML.load_file(@options[:camera_file])
@@ -236,7 +244,7 @@ render_count = 0
     mrender_parameters.each do |parameter|
       mrender_string = "#{mrender_bin} -i #{filenames[0]}"
       mrender_string += " -turn #{parameter[:angle]}"
-      mrender_string += " -is #{@options[:output_resolution].join(' ')}"
+      mrender_string += " -is #{parameter[:output_resolution]}"
       mrender_string += " -k scalar"
       mrender_string += " -q #{query}"
       mrender_string += " -m #{measure}"
@@ -335,13 +343,15 @@ render_count = 0
       execute_mencoder(mencoder_string)
     end
 
-    cleanup_files = []
-    cleanup_files += output_jpgs + output_pngs + output_files
-    cleanup_bar = ProgressBar.new("cleanup", cleanup_files.length)
-    cleanup_files.each do |cleanup|
-      File.unlink(cleanup)
-      cleanup_bar.inc
+    if @options[:cleanup]
+      cleanup_files = []
+      cleanup_files += output_jpgs + output_pngs + output_files
+      cleanup_bar = ProgressBar.new("cleanup", cleanup_files.length)
+      cleanup_files.each do |cleanup|
+        File.unlink(cleanup)
+        cleanup_bar.inc
+      end
+      cleanup_bar.finish
     end
-    cleanup_bar.finish
   end
 end
