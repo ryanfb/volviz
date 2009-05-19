@@ -11,6 +11,36 @@ require 'rubygems'
 require 'progressbar'
 
 DEFAULT_RESOLUTION = [320, 240]
+DEFAULT_NUM_THREADS = 16
+
+# # copied in for now
+# mrender_string += " -fr -0.1 0 4.1"
+# mrender_string += " -dn -1"
+# mrender_string += " -di 0"
+# mrender_string += " -df 1"
+# mrender_string += " -up 0 -1 0"
+# mrender_string += " -rh"
+# mrender_string += " -ar"
+# mrender_string += " -ur -1 1"
+# mrender_string += " -vr -1 1"
+# mrender_string += " -step 0.0008"
+# mrender_string += " -nt 16"
+# mrender_string += " -k00 cubic:1,0"
+# mrender_string += " -k11 cubicd:1,0"
+MRENDER_DEFAULTS = {
+  :eye_pos => "-0.1 0 4.1",
+  :near_clip => "-1",
+  :image_distance => "0",
+  :far_clip => "1",
+  :up => "0 -1 0",
+  :right_handed => true,
+  :at_relative => true,
+  :u_range => "-1 1",
+  :v_range => "-1 1",
+  :step => "0.0008",
+  :value_kernel => "cubic:1,0",
+  :k1_kernel => "cubicd:1,0",
+}
 
 # src/nrrd/enumsNrrd.c : _nrrdMeasureStr
 valid_measures = [
@@ -163,7 +193,7 @@ render_count = 0
 
     mrender_parameters = []
     @options[:angle_range].step(@options[:angle_interval]) do |angle|
-      mrender_parameters << {:angle => angle}
+      mrender_parameters << {:angle => angle}.merge(MRENDER_DEFAULTS)
     end
     
     render_bar = ProgressBar.new("volume render", mrender_parameters.length + 1)
@@ -178,20 +208,20 @@ render_count = 0
       mrender_string += " -k scalar"
       mrender_string += " -q #{query}"
       mrender_string += " -m #{measure}"
-      # copied in for now
-      mrender_string += " -fr -0.1 0 4.1"
-      mrender_string += " -dn -1"
-      mrender_string += " -di 0"
-      mrender_string += " -df 1"
-      mrender_string += " -up 0 -1 0"
-      mrender_string += " -rh"
-      mrender_string += " -ar"
-      mrender_string += " -ur -1 1"
-      mrender_string += " -vr -1 1"
-      mrender_string += " -step 0.0008"
-      mrender_string += " -nt 16"
-      mrender_string += " -k00 cubic:1,0"
-      mrender_string += " -k11 cubicd:1,0"
+
+      mrender_string += " -fr #{parameter[:eye_pos]}"
+      mrender_string += " -dn #{parameter[:near_clip]}"
+      mrender_string += " -di #{parameter[:image_distance]}"
+      mrender_string += " -df #{parameter[:far_clip]}"
+      mrender_string += " -up #{parameter[:up]}"
+      mrender_string += parameter[:right_handed] ? " -rh" : ''
+      mrender_string += parameter[:at_relative] ? " -ar" : ''
+      mrender_string += " -ur #{parameter[:u_range]}"
+      mrender_string += " -vr #{parameter[:v_range]}"
+      mrender_string += " -step #{parameter[:step]}"
+      mrender_string += " -nt #{DEFAULT_NUM_THREADS}"
+      mrender_string += " -k00 #{parameter[:value_kernel]}"
+      mrender_string += " -k11 #{parameter[:k1_kernel]}"
   
       output_file = File.basename(filename, '.nrrd') +
                     sprintf("-%s-%s-%03d.nrrd",
