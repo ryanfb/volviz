@@ -348,7 +348,9 @@ render_count = 0
     safe_execute do
       execute_mencoder(mencoder_string)
     end
-
+    
+    puts "Output: " + output_video
+    
     if @options[:cleanup]
       cleanup_files = []
       cleanup_files += output_jpgs + output_pngs + output_files
