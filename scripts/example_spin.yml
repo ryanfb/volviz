@@ -1,0 +1,217 @@
+--- 
+- :at_relative: true
+  :near_clip: "-1"
+  :u_range: -1 1
+  :image_distance: "0"
+  :v_range: -1 1
+  :far_clip: "1"
+  :step: "0.0008"
+  :value_kernel: cubic:1,0
+  :angle: 0
+  :k1_kernel: cubicd:1,0
+  :right_handed: true
+  :eye_pos: -0.1 0 4.1
+- :at_relative: true
+  :near_clip: "-1"
+  :u_range: -1 1
+  :image_distance: "0"
+  :v_range: -1 1
+  :far_clip: "1"
+  :step: "0.0008"
+  :value_kernel: cubic:1,0
+  :angle: 20
+  :k1_kernel: cubicd:1,0
+  :right_handed: true
+  :eye_pos: -0.1 0 4.1
+- :at_relative: true
+  :near_clip: "-1"
+  :u_range: -1 1
+  :image_distance: "0"
+  :v_range: -1 1
+  :far_clip: "1"
+  :step: "0.0008"
+  :value_kernel: cubic:1,0
+  :angle: 40
+  :k1_kernel: cubicd:1,0
+  :right_handed: true
+  :eye_pos: -0.1 0 4.1
+- :at_relative: true
+  :near_clip: "-1"
+  :u_range: -1 1
+  :image_distance: "0"
+  :v_range: -1 1
+  :far_clip: "1"
+  :step: "0.0008"
+  :value_kernel: cubic:1,0
+  :angle: 60
+  :k1_kernel: cubicd:1,0
+  :right_handed: true
+  :eye_pos: -0.1 0 4.1
+- :at_relative: true
+  :near_clip: "-1"
+  :u_range: -1 1
+  :image_distance: "0"
+  :v_range: -1 1
+  :far_clip: "1"
+  :step: "0.0008"
+  :value_kernel: cubic:1,0
+  :angle: 80
+  :k1_kernel: cubicd:1,0
+  :right_handed: true
+  :eye_pos: -0.1 0 4.1
+- :at_relative: true
+  :near_clip: "-1"
+  :u_range: -1 1
+  :image_distance: "0"
+  :v_range: -1 1
+  :far_clip: "1"
+  :step: "0.0008"
+  :value_kernel: cubic:1,0
+  :angle: 100
+  :k1_kernel: cubicd:1,0
+  :right_handed: true
+  :eye_pos: -0.1 0 4.1
+- :at_relative: true
+  :near_clip: "-1"
+  :u_range: -1 1
+  :image_distance: "0"
+  :v_range: -1 1
+  :far_clip: "1"
+  :step: "0.0008"
+  :value_kernel: cubic:1,0
+  :angle: 120
+  :k1_kernel: cubicd:1,0
+  :right_handed: true
+  :eye_pos: -0.1 0 4.1
+- :at_relative: true
+  :near_clip: "-1"
+  :u_range: -1 1
+  :image_distance: "0"
+  :v_range: -1 1
+  :far_clip: "1"
+  :step: "0.0008"
+  :value_kernel: cubic:1,0
+  :angle: 140
+  :k1_kernel: cubicd:1,0
+  :right_handed: true
+  :eye_pos: -0.1 0 4.1
+- :at_relative: true
+  :near_clip: "-1"
+  :u_range: -1 1
+  :image_distance: "0"
+  :v_range: -1 1
+  :far_clip: "1"
+  :step: "0.0008"
+  :value_kernel: cubic:1,0
+  :angle: 160
+  :k1_kernel: cubicd:1,0
+  :right_handed: true
+  :eye_pos: -0.1 0 4.1
+- :at_relative: true
+  :near_clip: "-1"
+  :u_range: -1 1
+  :image_distance: "0"
+  :v_range: -1 1
+  :far_clip: "1"
+  :step: "0.0008"
+  :value_kernel: cubic:1,0
+  :angle: 180
+  :k1_kernel: cubicd:1,0
+  :right_handed: true
+  :eye_pos: -0.1 0 4.1
+- :at_relative: true
+  :near_clip: "-1"
+  :u_range: -1 1
+  :image_distance: "0"
+  :v_range: -1 1
+  :far_clip: "1"
+  :step: "0.0008"
+  :value_kernel: cubic:1,0
+  :angle: 200
+  :k1_kernel: cubicd:1,0
+  :right_handed: true
+  :eye_pos: -0.1 0 4.1
+- :at_relative: true
+  :near_clip: "-1"
+  :u_range: -1 1
+  :image_distance: "0"
+  :v_range: -1 1
+  :far_clip: "1"
+  :step: "0.0008"
+  :value_kernel: cubic:1,0
+  :angle: 220
+  :k1_kernel: cubicd:1,0
+  :right_handed: true
+  :eye_pos: -0.1 0 4.1
+- :at_relative: true
+  :near_clip: "-1"
+  :u_range: -1 1
+  :image_distance: "0"
+  :v_range: -1 1
+  :far_clip: "1"
+  :step: "0.0008"
+  :value_kernel: cubic:1,0
+  :angle: 240
+  :k1_kernel: cubicd:1,0
+  :right_handed: true
+  :eye_pos: -0.1 0 4.1
+- :at_relative: true
+  :near_clip: "-1"
+  :u_range: -1 1
+  :image_distance: "0"
+  :v_range: -1 1
+  :far_clip: "1"
+  :step: "0.0008"
+  :value_kernel: cubic:1,0
+  :angle: 260
+  :k1_kernel: cubicd:1,0
+  :right_handed: true
+  :eye_pos: -0.1 0 4.1
+- :at_relative: true
+  :near_clip: "-1"
+  :u_range: -1 1
+  :image_distance: "0"
+  :v_range: -1 1
+  :far_clip: "1"
+  :step: "0.0008"
+  :value_kernel: cubic:1,0
+  :angle: 280
+  :k1_kernel: cubicd:1,0
+  :right_handed: true
+  :eye_pos: -0.1 0 4.1
+- :at_relative: true
+  :near_clip: "-1"
+  :u_range: -1 1
+  :image_distance: "0"
+  :v_range: -1 1
+  :far_clip: "1"
+  :step: "0.0008"
+  :value_kernel: cubic:1,0
+  :angle: 300
+  :k1_kernel: cubicd:1,0
+  :right_handed: true
+  :eye_pos: -0.1 0 4.1
+- :at_relative: true
+  :near_clip: "-1"
+  :u_range: -1 1
+  :image_distance: "0"
+  :v_range: -1 1
+  :far_clip: "1"
+  :step: "0.0008"
+  :value_kernel: cubic:1,0
+  :angle: 320
+  :k1_kernel: cubicd:1,0
+  :right_handed: true
+  :eye_pos: -0.1 0 4.1
+- :at_relative: true
+  :near_clip: "-1"
+  :u_range: -1 1
+  :image_distance: "0"
+  :v_range: -1 1
+  :far_clip: "1"
+  :step: "0.0008"
+  :value_kernel: cubic:1,0
+  :angle: 340
+  :k1_kernel: cubicd:1,0
+  :right_handed: true
+  :eye_pos: -0.1 0 4.1
