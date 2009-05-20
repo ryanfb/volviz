@@ -30,6 +30,7 @@ DEFAULT_NUM_THREADS = 16
 # mrender_string += " -k11 cubicd:1,0"
 MRENDER_DEFAULTS = {
   :eye_pos => "-0.1 0 4.1",
+  :look_at => "0 0 0",
   :near_clip => "-1",
   :image_distance => "0",
   :far_clip => "1",
@@ -252,6 +253,7 @@ render_count = 0
       
       # per-frame parameters
       mrender_string += " -fr #{parameter[:eye_pos]}"
+      mrender_string += " -at #{parameter[:look_at]}"
       mrender_string += " -dn #{parameter[:near_clip]}"
       mrender_string += " -di #{parameter[:image_distance]}"
       mrender_string += " -df #{parameter[:far_clip]}"
