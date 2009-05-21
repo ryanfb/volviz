@@ -13,6 +13,8 @@ require 'progressbar'
 
 DEFAULT_RESOLUTION = [320, 240]
 DEFAULT_NUM_THREADS = 16
+TEMP_HEQ_FILE = "JOINED_HEQ_SLAB.nrrd"
+TEMP_HEQ_SLICE_FORMAT = "temp-heq-slice-%06d.nrrd"
 
 # # copied in for now
 # mrender_string += " -fr -0.1 0 4.1"
@@ -108,7 +110,8 @@ filenames = []
   :num_threads => DEFAULT_NUM_THREADS,
   :queries => ['val'],
   :measures => ['variance'],
-  :cleanup => true
+  :cleanup => true,
+  :heq => false
   # max
 }
 
@@ -124,6 +127,11 @@ OptionParser.new do |opts|
   opts.on("-l","--[no-]leave",
           "Leave intermediate files") do |cleanup|
     @options[:cleanup] = !cleanup
+  end
+  
+  opts.on("-h","--[no-]heq",
+          "Histogram equalization") do |heq|
+    @options[:heq] = heq
   end
   
   opts.on("-nt THREADS","--num-threads=THREADS",
@@ -206,6 +214,7 @@ end
 render_count = 0
 @options[:queries].each do |query|
   @options[:measures].each do |measure|
+    cleanup_files = []
     render_count += 1
     puts query + ", " + measure + " (" + render_count.to_s + "/" + 
       (@options[:queries].length*@options[:measures].length).to_s + ")"
@@ -217,6 +226,8 @@ render_count = 0
     if @options.has_key? :colormap
       MRENDER_DEFAULTS[:colormap] = File.read(@options[:colormap])
     end
+    
+    MRENDER_DEFAULTS[:heq] = @options[:heq]
     
     mrender_parameters = []
     if @options.has_key? :camera_file
@@ -296,6 +307,21 @@ render_count = 0
       frame += 1
     end
     render_bar.finish
+    
+    if @options[:heq]
+      heq_bar = ProgressBar.new("heq", output_files.length)
+      system("unu join -a 2 -i #{output_files.join(' ')} -o #{TEMP_HEQ_FILE}")
+      system("unu heq -b 3000 -a 0.8 -i #{TEMP_HEQ_FILE} -o #{TEMP_HEQ_FILE}")
+      system("unu dice -a 2 -o /tmp/ -i #{TEMP_HEQ_FILE} -ff #{TEMP_HEQ_SLICE_FORMAT}")
+      slice = 0
+      output_files.each do |input_nrrd|
+        slice_file = sprintf("/tmp/#{TEMP_HEQ_SLICE_FORMAT}", slice)
+        File.rename(slice_file, input_nrrd)
+        heq_bar.inc
+        slice += 1
+      end
+      heq_bar.finish
+    end
     
     if @options.has_key? :colormap
       colormap_bar = ProgressBar.new("colormap", output_files.length)
@@ -378,7 +404,6 @@ render_count = 0
     puts "Output: " + output_video
     
     if @options[:cleanup]
-      cleanup_files = []
       cleanup_files += output_jpgs + output_pngs + output_files
       cleanup_bar = ProgressBar.new("cleanup", cleanup_files.length)
       cleanup_files.each do |cleanup|
