@@ -224,7 +224,8 @@ render_count = 0
     
     # use the content of the colormap in constructing the video file hash
     if @options.has_key? :colormap
-      output_parameters << File.read(@options[:colormap])
+      colormap_contents = File.read(File.expand_path(@options[:colormap]))
+      output_parameters << colormap_contents
     end
     
     output_parameters << @options[:heq]
@@ -333,7 +334,7 @@ render_count = 0
         hashed_heqd_file = File.basename(filename, '.nrrd') +
                             sprintf("-%s-%s-heq-%s.nrrd",
                               query, measure,
-                              short_sha(parameter.merge(:heq => true)))
+                              short_sha(parameter.merge({:heq => true})))
         File.rename(slice_file, hashed_heqd_file)
         
         output_files << hashed_heqd_file
@@ -344,15 +345,28 @@ render_count = 0
     end
     
     if @options.has_key? :colormap
-      colormap_bar = ProgressBar.new("colormap", output_files.length)
-      output_files.each do |input_nrrd|
+      colormap_bar = ProgressBar.new("colormap", mrender_parameters.length)
+
+      rmapped_output_files = []
+      frame = 0
+      mrender_parameters.each do |parameter|
+        rmapped_file = File.basename(filename, '.nrrd') +
+                            sprintf("-%s-%s-rmap-%s.nrrd",
+                              query, measure,
+                              short_sha(parameter.merge({:colormap => colormap_contents})))
         Open3.popen3("unu rmap -m #{@options[:colormap]}" +
-                     " -i #{input_nrrd}" +
-                     " -o #{input_nrrd}") do |stdin, stdout, stderr|
+                     " -i #{output_files[frame]}" +
+                     " -o #{rmapped_file}") do |stdin, stdout, stderr|
           stdout.readlines
         end
+        rmapped_output_files << rmapped_file
         colormap_bar.inc
+        frame += 1
       end
+      
+      cleanup_files += output_files
+      output_files = rmapped_output_files
+      
       colormap_bar.finish
     end
 
