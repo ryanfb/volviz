@@ -151,6 +151,11 @@ OptionParser.new do |opts|
     @options[:camera_file] = camera_file
   end
   
+  opts.on("--colormap=COLORMAP",
+          "Use colormap file for remapping after projection") do |colormap|
+    @options[:colormap] = colormap
+  end
+  
   opts.on("--measures m1,m2,...", Array,
           "Value measures to render, any of: #{valid_measures.join(', ')}") do |measures|
     @options[:measures] = measures & valid_measures
@@ -207,6 +212,12 @@ render_count = 0
 
     MRENDER_DEFAULTS[:output_resolution] = 
       @options[:output_resolution].join(' ')
+    
+    # use the content of the colormap in the options hash
+    if @options.has_key? :colormap
+      MRENDER_DEFAULTS[:colormap] = File.read(@options[:colormap])
+    end
+    
     mrender_parameters = []
     if @options.has_key? :camera_file
       camera_file = YAML.load_file(@options[:camera_file])
@@ -285,6 +296,19 @@ render_count = 0
       frame += 1
     end
     render_bar.finish
+    
+    if @options.has_key? :colormap
+      colormap_bar = ProgressBar.new("colormap", output_files.length)
+      output_files.each do |input_nrrd|
+        Open3.popen3("unu rmap -m #{@options[:colormap]}" +
+                     " -i #{input_nrrd}" +
+                     " -o #{input_nrrd}") do |stdin, stdout, stderr|
+          stdout.readlines
+        end
+        colormap_bar.inc
+      end
+      colormap_bar.finish
+    end
 
     minmax_bar = ProgressBar.new("min/max calc", output_files.length)
     # compute min/max of output projections
