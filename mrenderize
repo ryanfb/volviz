@@ -315,8 +315,7 @@ render_count = 0
       heq_slab_file = File.basename(filename, '.nrrd') +
                     sprintf("-%s-%s-slab-%s.nrrd",
                       query, measure, 
-                      short_sha(mrender_parameters +
-                                output_parameters))
+                      short_sha(mrender_parameters))
       if File.exists?(heq_slab_file)
         puts heq_slab_file + " exists, skipping slabify and heq"
       else
@@ -367,7 +366,7 @@ render_count = 0
         rmapped_file = File.basename(filename, '.nrrd') +
                             sprintf("-%s-%s-rmap-%s.nrrd",
                               query, measure,
-                              short_sha(parameter.merge({:colormap => colormap_contents})))
+                              short_sha(parameter.merge({:heq => @options[:heq], :colormap => colormap_contents})))
         if File.exists?(rmapped_file)
           puts rmapped_file + " exists, skipping"
         else
@@ -412,20 +411,27 @@ render_count = 0
     # puts "max: #{@global_max}"
 
     output_pngs = []
-    quantize_bar = ProgressBar.new("quantizing", output_files.length)
+    frame = 0
+    quantize_bar = ProgressBar.new("quantizing", mrender_parameters.length)
     # quantize into png's
-    output_files.each do |input_nrrd|
+    mrender_parameters.each do |parameter|
       output_png = File.basename(filename, '.nrrd') +
-                    sprintf("-%s-%s-%03d.png",
-                      query, measure, output_pngs.length)
-      quantize_string = "unu quantize" +
-                        " -b 8 -min #{@global_min} -max #{@global_max}" + 
-                        " -i #{input_nrrd} -o #{output_png}"
-      Open3.popen3(quantize_string) do |stdin, stdout, stderr|
-        stdout.readlines
+                    sprintf("-%s-%s-%03d-%s.png",
+                      query, measure, output_pngs.length,
+                      short_sha(parameter.merge({:heq => @options[:heq], :colormap => colormap_contents})))
+      if File.exists?(output_png)
+        puts output_png + " exists, skipping"
+      else
+        quantize_string = "unu quantize" +
+                          " -b 8 -min #{@global_min} -max #{@global_max}" + 
+                          " -i #{output_files[frame]} -o #{output_png}"
+        Open3.popen3(quantize_string) do |stdin, stdout, stderr|
+          stdout.readlines
+        end
       end
       output_pngs << output_png
       quantize_bar.inc
+      frame += 1
     end
     quantize_bar.finish
 
