@@ -441,20 +441,6 @@ render_count = 0
     end
     quantize_bar.finish
 
-    # output_jpgs = []
-    # jpg_bar = ProgressBar.new("image conv", output_pngs.length)
-    # # convert to jpeg's
-    # output_pngs.each do |input_png|
-    #   output_jpg = File.basename(input_png, '.png') + '.jpg'
-    #   Open3.popen3("convert -quality 100 #{input_png} #{output_jpg}") do |stdin, stdout, stderr|
-    #     stdout.readlines
-    #   end
-    #   output_jpgs << output_jpg
-    #   jpg_bar.inc
-    # end
-    # jpg_bar.finish
-    # cleanup_files << output_jpgs
-
     # convert to video
     mencoder_string = "mencoder #{output_pngs.map{|i| 'mf://' + i}.join(' ')}" +
                       " -o #{output_video}" +
