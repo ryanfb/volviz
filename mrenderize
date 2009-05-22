@@ -319,6 +319,12 @@ render_count = 0
       if File.exists?(heq_slab_file)
         puts heq_slab_file + " exists, skipping slabify and heq"
       else
+        # If we were to just histo equalize each frame individually, we'll get
+        # interframe brightness inconsistencies because they won't be
+        # equalized using the same mapping. We could calculate an equalization
+        # mapping for one frame then apply it to the rest, but this method
+        # (joining them into a slab then computing the mapping) gives a better
+        # global result.
         puts "Slabifying..."
         system("unu join -a 2 -i #{output_files.join(' ')} -o #{heq_slab_file}")
         puts "Equalizing..."
@@ -434,20 +440,6 @@ render_count = 0
       frame += 1
     end
     quantize_bar.finish
-
-    # output_jpgs = []
-    # jpg_bar = ProgressBar.new("image conv", output_pngs.length)
-    # # convert to jpeg's
-    # output_pngs.each do |input_png|
-    #   output_jpg = File.basename(input_png, '.png') + '.jpg'
-    #   Open3.popen3("convert -quality 100 #{input_png} #{output_jpg}") do |stdin, stdout, stderr|
-    #     stdout.readlines
-    #   end
-    #   output_jpgs << output_jpg
-    #   jpg_bar.inc
-    # end
-    # jpg_bar.finish
-    # cleanup_files << output_jpgs
 
     # convert to video
     optimal_bitrate = (60 * 25 * @options[:output_resolution][0].to_i * @options[:output_resolution][1].to_i / 256.0).to_i
