@@ -319,6 +319,12 @@ render_count = 0
       if File.exists?(heq_slab_file)
         puts heq_slab_file + " exists, skipping slabify and heq"
       else
+        # If we were to just histo equalize each frame individually, we'll get
+        # interframe brightness inconsistencies because they won't be
+        # equalized using the same mapping. We could calculate an equalization
+        # mapping for one frame then apply it to the rest, but this method
+        # (joining them into a slab then computing the mapping) gives a better
+        # global result.
         puts "Slabifying..."
         system("unu join -a 2 -i #{output_files.join(' ')} -o #{heq_slab_file}")
         puts "Equalizing..."
