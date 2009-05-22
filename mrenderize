@@ -434,9 +434,9 @@ render_count = 0
     jpg_bar.finish
 
     # convert to video
-    mencoder_string = "mencoder #{output_jpgs.map{|i| 'mf://' + i}.join(' ')}" +
+    mencoder_string = "mencoder #{output_pngs.map{|i| 'mf://' + i}.join(' ')}" +
                       " -o #{output_video}" +
-                      " -mf fps=10" +
+                      " -mf w=#{@options[:output_resolution][0]}:h=#{@options[:output_resolution][1]}:fps=10:type=png" +
                       " -ovc lavc -lavcopts vcodec=msmpeg4v2:vbitrate=800" +
                       " 2>&1"
     # puts mencoder_string
