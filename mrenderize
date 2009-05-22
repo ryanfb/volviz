@@ -444,21 +444,12 @@ render_count = 0
     # convert to video
     optimal_bitrate = (60 * 25 * @options[:output_resolution][0].to_i * @options[:output_resolution][1].to_i / 256.0).to_i
     mencoder_options = "vbitrate=#{optimal_bitrate}:mbd=2:keyint=132:vqblur=1.0:cmp=2:subcmp=2:dia=2:mv0:last_pred=3"
-    mencoder_string = "mencoder #{output_pngs.map{|i| 'mf://' + i}.join(' ')}" +
-                      " -o /dev/null" +
-                      " -mf w=#{@options[:output_resolution][0]}:h=#{@options[:output_resolution][1]}:fps=10:type=png" +
-                      " -ovc lavc -lavcopts vcodec=msmpeg4v2:#{mencoder_options}:vpass=1" +
-                      " 2>&1"
-    # puts mencoder_string
-    safe_execute do
-      execute_mencoder(mencoder_string)
-    end
- 
+
     # convert to video
     mencoder_string = "mencoder #{output_pngs.map{|i| 'mf://' + i}.join(' ')}" +
                       " -o #{output_video}" +
                       " -mf w=#{@options[:output_resolution][0]}:h=#{@options[:output_resolution][1]}:fps=10:type=png" +
-                      " -ovc lavc -lavcopts vcodec=msmpeg4v2:#{mencoder_options}:vpass=2" +
+                      " -ovc lavc -lavcopts vcodec=msmpeg4v2:#{mencoder_options}" +
                       " 2>&1"
     # puts mencoder_string
     safe_execute do
