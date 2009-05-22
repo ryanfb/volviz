@@ -326,7 +326,7 @@ render_count = 0
         system("unu heq -b 3000 -a 0.8 -i #{heq_slab_file} -o #{heq_slab_file}")
       end
       
-      Open3.popen3("unu dice -a 2 -o /tmp/ -i #{heq_slab_file} -ff #{TEMP_HEQ_SLICE_FORMAT}") do |stdin, stdout, stderr|
+      Open3.popen3("unu dice -a 2 -o ./ -i #{heq_slab_file} -ff #{TEMP_HEQ_SLICE_FORMAT}") do |stdin, stdout, stderr|
         stdout.each("\n") do |line|
           heq_bar.inc
         end
@@ -337,15 +337,13 @@ render_count = 0
       cleanup_files += output_files
       output_files.clear
       mrender_parameters.each do |parameter|
-        slice_file = sprintf("/tmp/#{TEMP_HEQ_SLICE_FORMAT}", slice)
+        slice_file = sprintf("#{TEMP_HEQ_SLICE_FORMAT}", slice)
         hashed_heqd_file = File.basename(filename, '.nrrd') +
                             sprintf("-%s-%s-heq-%s.nrrd",
                               query, measure,
                               short_sha(parameter.merge({:heq => true})))
-        # can't use move/rename because cross-partition will complain
-        FileUtils::cp(slice_file, hashed_heqd_file)
+        File.rename(slice_file, hashed_heqd_file)
         
-        cleanup_files << slice_file
         output_files << hashed_heqd_file
         heq_bar.inc
         slice += 1
