@@ -363,10 +363,14 @@ render_count = 0
                             sprintf("-%s-%s-rmap-%s.nrrd",
                               query, measure,
                               short_sha(parameter.merge({:colormap => colormap_contents})))
-        Open3.popen3("unu rmap -m #{@options[:colormap]}" +
-                     " -i #{output_files[frame]}" +
-                     " -o #{rmapped_file}") do |stdin, stdout, stderr|
-          stdout.readlines
+        if File.exists?(rmapped_file)
+          puts rmapped_file + " exists, skipping"
+        else
+          Open3.popen3("unu rmap -m #{@options[:colormap]}" +
+                       " -i #{output_files[frame]}" +
+                       " -o #{rmapped_file}") do |stdin, stdout, stderr|
+            stdout.readlines
+          end
         end
         rmapped_output_files << rmapped_file
         colormap_bar.inc
