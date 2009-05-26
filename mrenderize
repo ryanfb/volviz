@@ -436,6 +436,17 @@ render_count = 0
 
     # puts "min: #{@global_min}"
     # puts "max: #{@global_max}"
+    
+    if needs_nan_strip
+      nan_bar = ProgressBar.new("NaN strip", output_files.length)
+      output_files.each do |input_nrrd|
+        Open3.popen3("unu 2op exists #{input_nrrd} 0 -o #{input_nrrd}") do |stdin, stdout, stderr|
+          stdout.readlines
+        end
+        nan_bar.inc
+      end
+      nan_bar.finish
+    end
 
     output_pngs = []
     frame = 0
