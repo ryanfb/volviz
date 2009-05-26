@@ -63,7 +63,17 @@ valid_measures = [
   "skew",
   "line-slope",
   "line-intercept",
-  "line-error"
+  "line-error",
+  "histo-min",
+  "histo-max",
+  "histo-mean",
+  "histo-median",
+  "histo-mode",
+  "histo-product",
+  "histo-sum",
+  "histo-L2",
+  "histo-variance",
+  "histo-SD"
 ]
 
 # src/gage/scl.c : _gageSclStrEqv
