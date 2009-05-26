@@ -424,6 +424,8 @@ render_count = 0
             this_max = $1.to_f
             @global_max ||= this_max
             @global_max = this_max > @global_max ? this_max : @global_max
+          elsif line == "# has non-existent values"
+            puts "DANGER"
           end
         end
       end
