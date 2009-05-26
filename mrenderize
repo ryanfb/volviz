@@ -382,7 +382,7 @@ render_count = 0
         rmapped_file = File.basename(filename, '.nrrd') +
                             sprintf("-%s-%s-rmap-%s.nrrd",
                               query, measure,
-                              short_sha(parameter.merge({:heq => @options[:heq], :colormap => colormap_contents})))
+                              short_sha(parameter.merge({:heq => (@options[:heq] ? mrender_parameters : false), :colormap => colormap_contents})))
         if File.exists?(rmapped_file)
           puts rmapped_file + " exists, skipping"
         else
@@ -434,7 +434,7 @@ render_count = 0
       output_png = File.basename(filename, '.nrrd') +
                     sprintf("-%s-%s-%03d-%s.png",
                       query, measure, output_pngs.length,
-                      short_sha(parameter.merge({:heq => @options[:heq], :colormap => colormap_contents})))
+                      short_sha(parameter.merge({:heq => (@options[:heq] ? mrender_parameters : false), :colormap => colormap_contents})))
       if File.exists?(output_png)
         puts output_png + " exists, skipping"
       else
