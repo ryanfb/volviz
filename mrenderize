@@ -35,7 +35,7 @@ MRENDER_DEFAULTS = {
   :near_clip => "-1",
   :image_distance => "0",
   :far_clip => "1",
-  :up => "0 -1 0",
+  # :up => "0 -1 0",
   :right_handed => true,
   :at_relative => true,
   :u_range => "-1 1",
@@ -120,7 +120,8 @@ filenames = []
   :queries => ['val'],
   :measures => ['variance'],
   :cleanup => true,
-  :heq => false
+  :heq => false,
+  :up_vector => "0 -1 0",
   # max
 }
 
@@ -136,6 +137,11 @@ OptionParser.new do |opts|
   opts.on("-l","--[no-]leave",
           "Leave intermediate files") do |cleanup|
     @options[:cleanup] = !cleanup
+  end
+
+  opts.on("--up v1,v2,v3", Array,
+          "Up-vector") do |up_vector|
+    @options[:up_vector] = up_vector.join(' ')
   end
   
   opts.on("-h","--[no-]heq",
@@ -231,6 +237,8 @@ render_count = 0
 
     MRENDER_DEFAULTS[:output_resolution] = 
       @options[:output_resolution].join(' ')
+    MRENDER_DEFAULTS[:up] = 
+      @options[:up_vector]
     
     # use the content of the colormap in constructing the video file hash
     if @options.has_key? :colormap
