@@ -454,11 +454,18 @@ render_count = 0
     # convert to video
     optimal_bitrate = (60 * 25 * @options[:output_resolution][0].to_i * @options[:output_resolution][1].to_i / 256.0).to_i
     mencoder_options = "vbitrate=#{optimal_bitrate}:mbd=2:keyint=132:vqblur=1.0:cmp=2:subcmp=2:dia=2:mv0:last_pred=3"
+    
+    # write out media files list
+    media_filename = File.basename(filename, '.nrrd') +
+                     sprintf("-%s-%s-mf-%s.txt",
+                     query, measure, short_sha(mrender_parameters))
+    File.open(media_filename, 'w') {|f| f.write(output_pngs.join("\n"))}
+    cleanup_files << media_filename
 
     # convert to video
-    mencoder_string = "mencoder #{output_pngs.map{|i| 'mf://' + i}.join(' ')}" +
+    mencoder_string = "mencoder mf://@#{media_filename}" +
+                      " -mf w=#{@options[:output_resolution][0]}:h=#{@options[:output_resolution][1]}:fps=29.97:type=png" +
                       " -o #{output_video}" +
-                      " -mf w=#{@options[:output_resolution][0]}:h=#{@options[:output_resolution][1]}:fps=10:type=png" +
                       " -ovc lavc -lavcopts vcodec=msmpeg4v2:#{mencoder_options}" +
                       " 2>&1"
     # puts mencoder_string
