@@ -275,6 +275,8 @@ render_count = 0
     0.step(mrender_full_parameters.length, @options[:angle_interval]) do |parameter_position|
       mrender_parameters << mrender_full_parameters[parameter_position]
     end
+    # strip nils
+    mrender_parameters.compact!
     
     if @options[:debug]
       puts "Rendering parameters:"
