@@ -248,20 +248,26 @@ render_count = 0
     
     output_parameters << @options[:heq]
     
-    mrender_parameters = []
+    mrender_full_parameters = []
     if @options.has_key? :camera_file
       camera_file = YAML.load_file(@options[:camera_file])
       camera_file.each do |camera_params|
         # merge last parameters so we don't have to respecify each frame
-        camera_params =  mrender_parameters.last.merge(camera_params) unless
-          mrender_parameters.last.nil?
+        camera_params =  mrender_full_parameters.last.merge(camera_params) unless
+          mrender_full_parameters.last.nil?
         # merge against defaults so custom params overwrite them
-        mrender_parameters << MRENDER_DEFAULTS.merge(camera_params)
+        mrender_full_parameters << MRENDER_DEFAULTS.merge(camera_params)
       end
     else
-      @options[:angle_range].step(@options[:angle_interval]) do |angle|
-        mrender_parameters << MRENDER_DEFAULTS.merge({:angle => angle})
+      @options[:angle_range].each do |angle|
+        mrender_full_parameters << MRENDER_DEFAULTS.merge({:angle => angle})
       end
+    end
+
+    mrender_parameters = []
+    # Now filter the array at the specified interval using Numeric#step
+    0.step(mrender_full_parameters.length, @options[:angle_interval]) do |parameter_position|
+      mrender_parameters << mrender_full_parameters[parameter_position]
     end
     
     # puts mrender_parameters.to_yaml
