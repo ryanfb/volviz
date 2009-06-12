@@ -122,6 +122,7 @@ filenames = []
   :cleanup => true,
   :heq => false,
   :up_vector => "0 -1 0",
+  :debug => false
   # max
 }
 
@@ -132,6 +133,11 @@ OptionParser.new do |opts|
   def opts.show_usage
     puts self
     exit
+  end
+  
+  opts.on("-g","--[no-]debug",
+          "Output debug info") do |debug|
+    @options[:debug] = debug
   end
   
   opts.on("-l","--[no-]leave",
@@ -270,7 +276,10 @@ render_count = 0
       mrender_parameters << mrender_full_parameters[parameter_position]
     end
     
-    # puts mrender_parameters.to_yaml
+    if @options[:debug]
+      puts "Rendering parameters:"
+      puts mrender_parameters.to_yaml
+    end
     
     filename = filenames[0]
     output_video = sprintf("%s-%s-%s-video-%s.avi",
@@ -320,6 +329,10 @@ render_count = 0
   
       mrender_string += " -o #{output_file}"
   
+      if @options[:debug]
+        puts mrender_string
+      end
+      
       # puts angle.to_s + ": " + mrender_string
       # Open3.popen3(mrender_string) { |stdin, stdout, stderr| stderr.readlines }
       if File.exists?(output_file)
@@ -349,10 +362,19 @@ render_count = 0
         # mapping for one frame then apply it to the rest, but this method
         # (joining them into a slab then computing the mapping) gives a better
         # global result.
+        slab_command = "unu join -a 2 -i #{output_files.join(' ')} -o #{heq_slab_file}"
+        if @options[:debug]
+          puts slab_command
+        end
         puts "Slabifying..."
-        system("unu join -a 2 -i #{output_files.join(' ')} -o #{heq_slab_file}")
+        system(slab_command)
+        
+        equalize_command = "unu heq -b 3000 -a 0.8 -i #{heq_slab_file} -o #{heq_slab_file}"
+        if @options[:debug]
+          puts equalize_command
+        end
         puts "Equalizing..."
-        system("unu heq -b 3000 -a 0.8 -i #{heq_slab_file} -o #{heq_slab_file}")
+        system(equalize_command)
       end
       cleanup_files << heq_slab_file
       
@@ -369,8 +391,12 @@ render_count = 0
           puts hashed_heqd_file + " exists, skipping"
         else
           if !diced
+            dice_command = "unu dice -a 2 -o ./ -i #{heq_slab_file} -ff #{TEMP_HEQ_SLICE_FORMAT}"
+            if @options[:debug]
+              puts dice_command
+            end
             puts "Dicing..."
-            Open3.popen3("unu dice -a 2 -o ./ -i #{heq_slab_file} -ff #{TEMP_HEQ_SLICE_FORMAT}") do |stdin, stdout, stderr|
+            Open3.popen3(dice_command) do |stdin, stdout, stderr|
               stdout.each("\n") do |line|
                 heq_bar.inc
               end
@@ -400,9 +426,13 @@ render_count = 0
         if File.exists?(rmapped_file)
           puts rmapped_file + " exists, skipping"
         else
-          Open3.popen3("unu rmap -m #{@options[:colormap]}" +
-                       " -i #{output_files[frame]}" +
-                       " -o #{rmapped_file}") do |stdin, stdout, stderr|
+          rmap_command = "unu rmap -m #{@options[:colormap]}" +
+                         " -i #{output_files[frame]}" +
+                         " -o #{rmapped_file}"
+          if @options[:debug]
+            puts rmap_command
+          end
+          Open3.popen3(rmap_command) do |stdin, stdout, stderr|
             stdout.readlines
           end
         end
@@ -496,7 +526,10 @@ render_count = 0
                       " -o #{output_video}" +
                       " -ovc lavc -lavcopts vcodec=msmpeg4v2:#{mencoder_options}" +
                       " 2>&1"
-    # puts mencoder_string
+    
+    if @options[:debug]
+      puts mencoder_string
+    end
     safe_execute do
       execute_mencoder(mencoder_string)
     end   
